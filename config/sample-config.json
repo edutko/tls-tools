@@ -1,0 +1,16 @@
+{
+  "certs": {
+    "Root CA": {"keyType": "RSA-3072", "purpose": "root-ca", "subject": {"cn": "Root CA"}},
+    "Intermediate CA": {"keyType": "RSA-3072", "purpose": "intermediate-ca", "subject": {"cn": "Intermediate CA"}, "parent":  "Root CA"},
+    "bar1": {"keyType": "RSA-2048", "hostnames":  ["bar1.example.com"], "parent":  "Intermediate CA"},
+    "bar2": {"keyType": "P-256", "hostnames":  ["bar2.example.com"], "parent":  "Intermediate CA"}
+  },
+  "listeners": {
+    "127.0.0.1:8443": {
+      "certs": ["bar1", "bar2"]
+    }
+  },
+  "clients": [
+    { "addr": "127.0.0.1:8443", "cipherSuites":  "ECDHE-RSA-AES128-GCM-SHA256", "maxTLSVersion": "1.2" }
+  ]
+}
