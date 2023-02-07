@@ -15,13 +15,12 @@ import (
 )
 
 func (c Cert) ToTemplate() (*x509.Certificate, error) {
-	tmpl := purposes[DefaultPurpose]
-	var ok bool
-	if c.Purpose != "" {
-		tmpl, ok = purposes[strings.ToLower(strings.TrimSpace(c.Purpose))]
-		if !ok {
-			return nil, errors.New("invalid purpose")
-		}
+	if c.Purpose == "" {
+		c.Purpose = DefaultPurpose
+	}
+	tmpl, ok := purposes[strings.ToLower(strings.TrimSpace(c.Purpose))]
+	if !ok {
+		return nil, errors.New("invalid purpose")
 	}
 
 	var err error
@@ -102,6 +101,8 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 		if !ok {
 			return nil, fmt.Errorf("invalid serial number: %s", *c.SerialNumber)
 		}
+	} else {
+		tmpl.SerialNumber = random.SerialNumber()
 	}
 
 	if c.Issuer != nil {

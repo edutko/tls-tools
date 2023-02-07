@@ -28,13 +28,6 @@ func NewStoreFromConfig(cfg map[string]config.Cert) (Store, error) {
 			return nil, err
 		}
 
-		if tmpl.SerialNumber == nil {
-			tmpl.SerialNumber, err = rand.Int(rand.Reader, big.NewInt(2^64))
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		priv, err := NewKeypair(crt.GetKeyType())
 		if err != nil {
 			return nil, err

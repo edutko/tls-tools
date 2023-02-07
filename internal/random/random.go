@@ -28,6 +28,15 @@ func Name(maxLen int) string {
 	return base64.RawURLEncoding.EncodeToString(b)[:l]
 }
 
+func SerialNumber() *big.Int {
+	sn := make([]byte, 18)
+	_, err := rand.Read(sn)
+	if err != nil {
+		panic(err)
+	}
+	return big.NewInt(0).SetBytes(sn)
+}
+
 func CountryCode() string {
 	return countryCodes[Integer(len(countryCodes))]
 }
