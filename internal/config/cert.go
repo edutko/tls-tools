@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"tls-cert-tools/internal/random"
 )
 
 func (c Cert) ToTemplate() (*x509.Certificate, error) {
@@ -30,8 +32,10 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 		}
 	} else if len(c.DNSNames) > 0 {
 		tmpl.Subject = pkix.Name{CommonName: c.DNSNames[0]}
+	} else if len(c.EmailAddresses) > 0 {
+		tmpl.Subject = pkix.Name{CommonName: c.EmailAddresses[0]}
 	} else {
-		tmpl.Subject = DefaultSubject
+		tmpl.Subject = random.PkixName()
 	}
 
 	if c.NotBefore != "" {

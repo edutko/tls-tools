@@ -3,7 +3,6 @@ package config
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"crypto/x509/pkix"
 )
 
 type Config struct {
@@ -15,12 +14,10 @@ type Config struct {
 const DefaultKeyType = "RSA-2048"
 const DefaultPurpose = "server"
 
-var DefaultSubject = pkix.Name{CommonName: "localhost"}
-
 type Cert struct {
 	KeyType   string   `json:"keyType"`
-	Subject   *Subject `json:"subject"`
 	Purpose   string   `json:"purpose"`
+	Subject   *Subject `json:"subject"`   // default: first SAN or random strings
 	Parent    string   `json:"parent"`    // default: self (self-signed)
 	NotBefore string   `json:"notBefore"` // default: now
 	NotAfter  string   `json:"notAfter"`  // default: now + 375 days
