@@ -7,7 +7,9 @@ import (
 
 func TLSVersionString(v uint16) string {
 	switch v {
-	case tls.VersionSSL30:
+	case 0x0200:
+		return "SSL 2.0"
+	case 0x0300:
 		return "SSL 3.0"
 	case tls.VersionTLS10:
 		return "TLS 1.0"
