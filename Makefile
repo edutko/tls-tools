@@ -1,6 +1,10 @@
-all: client server mkcerts
+all: test client server mkcerts
+
 clean:
 	rm -rf out
+
+test:
+	go test ./internal/...
 
 client: out/client
 server: out/server
