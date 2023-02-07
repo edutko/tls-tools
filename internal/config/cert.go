@@ -67,7 +67,6 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 	}
 
 	if c.SignatureAlg != "" {
-		var ok bool
 		tmpl.SignatureAlgorithm, ok = signatureAlgorithms[strings.ToLower(strings.TrimSpace(c.SignatureAlg))]
 		if !ok {
 			return nil, errors.New("invalid signature algorithm")
@@ -97,7 +96,7 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 	if c.SerialNumber != nil {
 		tmpl.SerialNumber, ok = c.SerialNumber.ToBigInt()
 		if !ok {
-			return nil, fmt.Errorf("invalid serial number: %s", c.SerialNumber)
+			return nil, fmt.Errorf("invalid serial number: %s", *c.SerialNumber)
 		}
 	}
 
@@ -115,14 +114,14 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 	if c.SubjectKeyId != nil {
 		tmpl.SubjectKeyId, ok = c.SubjectKeyId.ToBytes()
 		if !ok {
-			return nil, fmt.Errorf("invalid subkect key id: %s", c.SubjectKeyId)
+			return nil, fmt.Errorf("invalid subkect key id: %s", *c.SubjectKeyId)
 		}
 	}
 
 	if c.AuthorityKeyId != nil {
 		tmpl.AuthorityKeyId, ok = c.AuthorityKeyId.ToBytes()
 		if !ok {
-			return nil, fmt.Errorf("invalid authority key id: %s", c.AuthorityKeyId)
+			return nil, fmt.Errorf("invalid authority key id: %s", *c.AuthorityKeyId)
 		}
 	}
 
