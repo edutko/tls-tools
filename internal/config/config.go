@@ -79,14 +79,17 @@ type Extension struct {
 
 var purposes = map[string]x509.Certificate{
 	"root-ca": {
-		KeyUsage:   x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		IsCA:       true,
-		MaxPathLen: 1,
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+		MaxPathLen:            1,
 	},
 	"intermediate-ca": {
-		KeyUsage:   x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		IsCA:       true,
-		MaxPathLen: 0,
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+		BasicConstraintsValid: true,
+		IsCA:                  true,
+		MaxPathLen:            0,
+		MaxPathLenZero:        true,
 	},
 	"client": {
 		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
