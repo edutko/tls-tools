@@ -38,6 +38,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
+		log.Println("Received Ctrl-C. Shutting down...")
 		cancel()
 	}()
 

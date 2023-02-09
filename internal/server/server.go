@@ -3,8 +3,10 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
+	"net"
 	"sync"
 	"time"
 
@@ -75,7 +77,11 @@ func listen(ctx context.Context, cfg ListenerConfig, wg *sync.WaitGroup) {
 		for {
 			c, err := l.Accept()
 			if err != nil {
-				log.Println(fmt.Errorf("l.Accept: %w", err))
+				if errors.Is(err, net.ErrClosed) {
+					break
+				}
+				log.Println(err)
+				continue
 			}
 			err = c.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
 			if err != nil {
