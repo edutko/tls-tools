@@ -7,7 +7,7 @@ import (
 )
 
 type KeyAndCert struct {
-	certTemplate *x509.Certificate
+	template     *x509.Certificate
 	parentCert   string
 	privateKey   crypto.Signer
 	certificate  *x509.Certificate

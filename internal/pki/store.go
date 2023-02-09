@@ -20,8 +20,8 @@ type Store map[string]KeyAndCert
 
 func NewStoreFromConfig(cfg map[string]config.Cert) (Store, error) {
 	store := Store{}
+	needSignatures := make([]string, 0)
 
-	needSignature := make([]string, 0)
 	for name, crt := range cfg {
 		tmpl, err := crt.ToTemplate()
 		if err != nil {
@@ -49,27 +49,26 @@ func NewStoreFromConfig(cfg map[string]config.Cert) (Store, error) {
 		}
 
 		kac := KeyAndCert{
-			privateKey:   priv,
-			keyDER:       keyDer,
-			certTemplate: tmpl,
-			parentCert:   crt.Parent,
+			privateKey: priv,
+			keyDER:     keyDer,
+			template:   tmpl,
+			parentCert: crt.Parent,
 		}
 
 		if kac.parentCert == "" {
-			kac.certDER, err = x509.CreateCertificate(rand.Reader, tmpl, tmpl, priv.Public(), priv)
+			kac, err = signSelf(kac)
 			if err != nil {
 				return nil, err
 			}
-			kac.certificate, _ = x509.ParseCertificate(kac.certDER)
 		} else {
-			needSignature = append(needSignature, name)
+			needSignatures = append(needSignatures, name)
 		}
 
 		store[name] = kac
 	}
 
-	for _, name := range needSignature {
-		err := store.signCert(name, 5)
+	for _, name := range needSignatures {
+		err := store.signCertAndAncestors(name, 5)
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +77,7 @@ func NewStoreFromConfig(cfg map[string]config.Cert) (Store, error) {
 	return store, nil
 }
 
-func (s *Store) signCert(name string, maxDepth int) error {
+func (s *Store) signCertAndAncestors(name string, maxDepth int) error {
 	c, ok := (*s)[name]
 	if !ok {
 		return fmt.Errorf("failed to find cert named %s", name)
@@ -90,14 +89,8 @@ func (s *Store) signCert(name string, maxDepth int) error {
 
 	var err error
 	if c.parentCert == "" {
-		c.certDER, err = x509.CreateCertificate(rand.Reader, c.certTemplate, c.certTemplate, c.privateKey.Public(),
-			c.privateKey)
-		if err != nil {
-			return err
-		}
-		c.certificate, _ = x509.ParseCertificate(c.certDER)
-		(*s)[name] = c
-		return nil
+		(*s)[name], err = signSelf(c)
+		return err
 	}
 
 	if maxDepth == 0 {
@@ -110,54 +103,75 @@ func (s *Store) signCert(name string, maxDepth int) error {
 	}
 
 	if parent.certDER == nil {
-		err = s.signCert(c.parentCert, maxDepth-1)
+		err = s.signCertAndAncestors(c.parentCert, maxDepth-1)
 		if err != nil {
 			return err
 		}
 		parent = (*s)[c.parentCert]
 	}
 
+	(*s)[name], err = sign(c, parent)
+	return err
+}
+
+func signSelf(c KeyAndCert) (KeyAndCert, error) {
+	var err error
+
+	c.certDER, err = x509.CreateCertificate(rand.Reader, c.template, c.template, c.privateKey.Public(), c.privateKey)
+	if err != nil {
+		return c, err
+	}
+
+	c.certificate, _ = x509.ParseCertificate(c.certDER)
+	c.template = nil
+
+	return c, nil
+}
+
+func sign(c, parent KeyAndCert) (KeyAndCert, error) {
+	var err error
+
+	c.certChainDER = append(parent.certChainDER, parent.certDER)
+
 	// Trick Go into preserving the overridden AKI, if provided
 	savedParentSKI := parent.certificate.SubjectKeyId
-	if len(c.certTemplate.AuthorityKeyId) > 0 {
-		parent.certificate.SubjectKeyId = c.certTemplate.AuthorityKeyId
+	if len(c.template.AuthorityKeyId) > 0 {
+		parent.certificate.SubjectKeyId = c.template.AuthorityKeyId
 	}
-	c.certChainDER = append(parent.certChainDER, parent.certDER)
-	c.certDER, err = x509.CreateCertificate(rand.Reader, c.certTemplate, parent.certificate, c.privateKey.Public(),
+	c.certDER, err = x509.CreateCertificate(rand.Reader, c.template, parent.certificate, c.privateKey.Public(),
 		parent.privateKey)
-	c.certificate, _ = x509.ParseCertificate(c.certDER)
-	if len(c.certTemplate.AuthorityKeyId) > 0 {
+	if len(c.template.AuthorityKeyId) > 0 {
 		parent.certificate.SubjectKeyId = savedParentSKI
 	}
 	if err != nil {
-		return err
+		return c, err
 	}
 
-	(*s)[name] = c
+	c.certificate, _ = x509.ParseCertificate(c.certDER)
+	c.template = nil
 
-	return nil
+	return c, nil
 }
 
 func marshalPublicKey(pk any) (publicKeyBytes []byte, err error) {
 	switch pub := pk.(type) {
 	case *rsa.PublicKey:
-		publicKeyBytes, err = asn1.Marshal(struct {
-			N *big.Int
-			E int
-		}{
-			N: pub.N,
-			E: pub.E,
-		})
-		if err != nil {
-			return nil, err
-		}
+		publicKeyBytes, err = asn1.Marshal(rsaPublicKey{N: pub.N, E: pub.E})
+
 	case *ecdsa.PublicKey:
 		publicKeyBytes = elliptic.Marshal(pub.Curve, pub.X, pub.Y)
+
 	case ed25519.PublicKey:
 		publicKeyBytes = pub
+
 	default:
-		return nil, fmt.Errorf("x509: unsupported public key type: %T", pub)
+		err = fmt.Errorf("x509: unsupported public key type: %T", pub)
 	}
 
-	return publicKeyBytes, nil
+	return
+}
+
+type rsaPublicKey struct {
+	N *big.Int
+	E int
 }

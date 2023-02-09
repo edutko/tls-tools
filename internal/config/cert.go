@@ -105,6 +105,23 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 		tmpl.SerialNumber = random.SerialNumber()
 	}
 
+	tmpl.DNSNames = c.DNSNames
+	tmpl.EmailAddresses = c.EmailAddresses
+
+	if c.IPAddresses != nil {
+		tmpl.IPAddresses = make([]net.IP, len(c.IPAddresses))
+		for i, s := range c.IPAddresses {
+			tmpl.IPAddresses[i] = net.ParseIP(s)
+		}
+	}
+
+	if c.URIs != nil {
+		// TODO
+	}
+
+	tmpl.OCSPServer = c.OCSPServer
+	tmpl.CRLDistributionPoints = c.CRLDistributionPoints
+
 	if c.Issuer != nil {
 		tmpl.Issuer, err = c.Issuer.ToPkixName()
 		if err != nil {
@@ -129,23 +146,6 @@ func (c Cert) ToTemplate() (*x509.Certificate, error) {
 			return nil, fmt.Errorf("invalid authority key id: %s", *c.AuthorityKeyId)
 		}
 	}
-
-	tmpl.DNSNames = c.DNSNames
-	tmpl.EmailAddresses = c.EmailAddresses
-
-	if c.IPAddresses != nil {
-		tmpl.IPAddresses = make([]net.IP, len(c.IPAddresses))
-		for i, s := range c.IPAddresses {
-			tmpl.IPAddresses[i] = net.ParseIP(s)
-		}
-	}
-
-	if c.URIs != nil {
-		// TODO
-	}
-
-	tmpl.OCSPServer = c.OCSPServer
-	tmpl.CRLDistributionPoints = c.CRLDistributionPoints
 
 	return &tmpl, nil
 }
