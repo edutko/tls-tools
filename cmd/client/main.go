@@ -29,33 +29,23 @@ func main() {
 	}
 
 	log.Println("Generating keys and certificates...")
-	c, err := client.NewClientFromConfig(cfg)
+	p, err := client.NewClientPoolFromConfig(cfg)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("Host: %s\n", c.Addr)
-	conn, err := tls.Dial("tcp", c.Addr, c.TLSConfig)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer func() {
-		err = conn.Close()
+	for _, c := range p.Clients {
+		info, err := c.GatherListenerInfo()
 		if err != nil {
-			log.Println(err)
+			log.Printf("error: %s: %v", c.Addr, err)
 		}
-	}()
 
-	err = conn.Handshake()
-	if err != nil {
-		log.Println(err)
-	}
-
-	cs := conn.ConnectionState()
-	fmt.Printf("  TLS Version: %s\n", util.TLSVersionString(cs.Version))
-	fmt.Printf("  Cipher suite: %s\n", tls.CipherSuiteName(cs.CipherSuite))
-	for _, crt := range cs.PeerCertificates {
-		fmt.Printf("  Certificate: %s\n", crt.Subject.CommonName)
-		fmt.Printf("    Signature algorithm: %s\n", crt.SignatureAlgorithm.String())
+		fmt.Printf("Host: %s\n", info.Addr)
+		fmt.Printf("  TLS Version: %s\n", util.TLSVersionString(info.TLSVersion))
+		fmt.Printf("  Cipher suite: %s\n", tls.CipherSuiteName(info.CipherSuite))
+		for _, crt := range info.PeerCerts {
+			fmt.Printf("  Certificate: %s\n", crt.Subject.CommonName)
+			fmt.Printf("    Signature algorithm: %s\n", crt.SignatureAlgorithm.String())
+		}
 	}
 }
