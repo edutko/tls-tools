@@ -1,9 +1,13 @@
-package util
+package tlsutil
 
 import (
 	"crypto/tls"
 	"fmt"
 )
+
+var SslTlsVersions = []uint16{
+	0x0200, 0x0300, tls.VersionTLS10, tls.VersionTLS11, tls.VersionTLS12, tls.VersionTLS13,
+}
 
 func TLSVersionString(v uint16) string {
 	switch v {

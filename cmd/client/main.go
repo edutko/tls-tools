@@ -10,11 +10,11 @@ import (
 
 	"tls-tools/internal/client"
 	"tls-tools/internal/config"
-	"tls-tools/internal/util"
+	"tls-tools/internal/tlsutil"
 )
 
 func main() {
-	configFile := flag.String("config", "server.conf", "configuration file")
+	configFile := flag.String("config", "client.conf", "configuration file")
 	flag.Parse()
 
 	cfgBytes, err := os.ReadFile(*configFile)
@@ -41,7 +41,7 @@ func main() {
 		}
 
 		fmt.Printf("Host: %s\n", info.Addr)
-		fmt.Printf("  TLS Version: %s\n", util.TLSVersionString(info.TLSVersion))
+		fmt.Printf("  TLS Version: %s\n", tlsutil.TLSVersionString(info.TLSVersion))
 		fmt.Printf("  Cipher suite: %s\n", tls.CipherSuiteName(info.CipherSuite))
 		for _, crt := range info.PeerCerts {
 			fmt.Printf("  Certificate: %s\n", crt.Subject.CommonName)
