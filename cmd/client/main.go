@@ -10,6 +10,7 @@ import (
 
 	"tls-tools/internal/client"
 	"tls-tools/internal/config"
+	"tls-tools/internal/pki"
 	"tls-tools/internal/tlsutil"
 )
 
@@ -29,12 +30,17 @@ func main() {
 	}
 
 	log.Println("Generating keys and certificates...")
-	p, err := client.NewClientPoolFromConfig(cfg)
+	certStore, err := pki.NewStoreFromConfig(cfg.Certs)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	for _, c := range p.Clients {
+	cs, err := client.NewClientsFromConfig(cfg.Clients, certStore)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, c := range cs {
 		info, err := c.GatherListenerInfo()
 		if err != nil {
 			log.Printf("error: %s: %v", c.Addr, err)

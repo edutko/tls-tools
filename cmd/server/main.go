@@ -9,6 +9,7 @@ import (
 	"os/signal"
 
 	"tls-tools/internal/config"
+	"tls-tools/internal/pki"
 	"tls-tools/internal/server"
 )
 
@@ -28,7 +29,12 @@ func main() {
 	}
 
 	log.Println("Generating keys and certificates...")
-	srv, err := server.NewServerFromConfig(cfg)
+	certStore, err := pki.NewStoreFromConfig(cfg.Certs)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	srv, err := server.NewServerFromConfig(cfg.Listeners, certStore)
 	if err != nil {
 		log.Fatalln(err)
 	}

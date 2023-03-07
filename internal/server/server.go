@@ -14,14 +14,9 @@ import (
 	"tls-tools/internal/pki"
 )
 
-func NewServerFromConfig(cfg config.Config) (*Server, error) {
-	store, err := pki.NewStoreFromConfig(cfg.Certs)
-	if err != nil {
-		return nil, err
-	}
-
+func NewServerFromConfig(cfg map[string]config.Listener, store pki.Store) (*Server, error) {
 	server := Server{}
-	for addr, l := range cfg.Listeners {
+	for addr, l := range cfg {
 		tc, err := l.ToTLSConfig()
 		if err != nil {
 			return nil, err

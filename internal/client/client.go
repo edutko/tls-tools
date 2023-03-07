@@ -9,22 +9,19 @@ import (
 	"tls-tools/internal/pki"
 )
 
-func NewClientPoolFromConfig(cfg config.Config) (*ClientPool, error) {
-	store, err := pki.NewStoreFromConfig(cfg.Certs)
-	if err != nil {
-		return nil, err
-	}
 
-	pool := ClientPool{}
-	for _, cc := range cfg.Clients {
+func NewClientsFromConfig(cfg []config.Client, store pki.Store) (map[string]*Client, error) {
+	clients := make(map[string]*Client, 0)
+
+	for _, cc := range cfg {
 		client, err := NewClientFromConfig(cc, store)
 		if err != nil {
 			return nil, err
 		}
-		pool.Clients = append(pool.Clients, client)
+		clients[client.Addr] = client
 	}
 
-	return &pool, nil
+	return clients, nil
 }
 
 func NewClientFromConfig(cfg config.Client, store pki.Store) (*Client, error) {
@@ -49,10 +46,6 @@ func NewClientFromConfig(cfg config.Client, store pki.Store) (*Client, error) {
 	}
 
 	return &Client{addr, tc}, nil
-}
-
-type ClientPool struct {
-	Clients []*Client
 }
 
 type Client struct {
