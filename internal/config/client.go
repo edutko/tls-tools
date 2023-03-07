@@ -7,7 +7,7 @@ import (
 
 func (c Client) ToTLSConfig() (*tls.Config, error) {
 	tc := tls.Config{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: !c.Verify,
 	}
 
 	var err error
