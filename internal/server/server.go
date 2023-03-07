@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"tls-cert-tools/internal/config"
-	"tls-cert-tools/internal/pki"
+	"tls-tools/internal/config"
+	"tls-tools/internal/pki"
 )
 
 func NewServerFromConfig(cfg config.Config) (*Server, error) {

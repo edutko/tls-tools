@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/signal"
 
-	"tls-cert-tools/internal/config"
-	"tls-cert-tools/internal/server"
+	"tls-tools/internal/config"
+	"tls-tools/internal/server"
 )
 
 func main() {

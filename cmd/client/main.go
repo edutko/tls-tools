@@ -8,9 +8,9 @@ import (
 	"log"
 	"os"
 
-	"tls-cert-tools/internal/client"
-	"tls-cert-tools/internal/config"
-	"tls-cert-tools/internal/util"
+	"tls-tools/internal/client"
+	"tls-tools/internal/config"
+	"tls-tools/internal/util"
 )
 
 func main() {

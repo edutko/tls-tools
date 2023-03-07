@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"tls-cert-tools/internal/random"
+	"tls-tools/internal/random"
 )
 
 func (c Cert) ToTemplate() (*x509.Certificate, error) {

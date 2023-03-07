@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"tls-cert-tools/internal/config"
+	"tls-tools/internal/config"
 )
 
 type Store map[string]KeyAndCert

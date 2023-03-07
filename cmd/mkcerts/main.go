@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"tls-cert-tools/internal/config"
-	"tls-cert-tools/internal/pki"
+	"tls-tools/internal/config"
+	"tls-tools/internal/pki"
 )
 
 func main() {

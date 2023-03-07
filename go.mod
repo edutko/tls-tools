@@ -1,4 +1,4 @@
-module tls-cert-tools
+module tls-tools
 
 go 1.19
 
